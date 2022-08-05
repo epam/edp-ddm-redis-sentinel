@@ -1,0 +1,60 @@
+# Default values for redis-sentinel.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+framework: other
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+global:
+  redisSentinel:
+    redis:
+      replicas: 3
+    sentinel:
+      replicas: 3
+
+sentinel:
+  podAnnotations:
+    sidecar.istio.io/inject: "true"
+  image:
+    repository: redis
+    tag: 6.2.6-alpine
+  resources:
+    requests:
+      cpu: 100m
+    limits:
+      memory: 100Mi
+  customConfig: []
+  metrics:
+    enabled: true
+
+redis:
+  auth:
+    secretName: "redis-auth"
+  podAnnotations: {}
+  image:
+    repository: redis
+    tag: 6.2.6-alpine
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 400m
+      memory: 500Mi
+  customConfig: []
+  storage:
+    create: true
+    size: 2Gi
+  metrics:
+    enabled: true
+

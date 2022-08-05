@@ -1,0 +1,69 @@
+apiVersion: databases.spotahome.com/v1
+kind: RedisFailover
+metadata:
+  name: {{ include "redis-sentinel.fullname" . }}
+spec:
+  auth:
+    secretPath: {{ .Values.redis.auth.secretName }}
+  sentinel:
+    {{- with .Values.sentinel.podAnnotations }}
+    podAnnotations:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    serviceAccountName: {{ include "redis-sentinel.serviceAccountName" . }}
+    image: "{{ .Values.sentinel.image.repository }}:{{ .Values.sentinel.image.tag | default .Chart.AppVersion }}"
+    replicas: {{ .Values.global.redisSentinel.sentinel.replicas }}
+    {{- if .Values.sentinel.customConfig }}
+    customConfig:
+      {{- range .Values.sentinel.customConfig }}
+      - "{{ . }}"
+      {{- end }}
+    {{- end }}
+    resources:
+      {{- toYaml .Values.sentinel.resources | nindent 6 }}
+    {{- if .Values.sentinel.metrics.enabled }}
+    exporter:
+      enabled: true
+      image: leominov/redis_sentinel_exporter:1.3.0
+    {{- end }}
+  redis:
+    {{- with .Values.redis.podAnnotations }}
+    podAnnotations:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    serviceAccountName: {{ include "redis-sentinel.serviceAccountName" . }}
+    image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag | default .Chart.AppVersion }}"
+    replicas: {{ .Values.global.redisSentinel.redis.replicas }}
+    {{- if .Values.redis.customConfig }}
+    customConfig:
+      {{- range .Values.redis.customConfig }}
+      - "{{ . }}"
+      {{- end }}
+    {{- end }}
+    resources:
+      {{- toYaml .Values.redis.resources | nindent 6 }}
+    {{- if .Values.redis.storage.create }}
+    storage:
+      #keepAfterDeletion is necessary because of its a workaround of https://github.com/spotahome/redis-operator/issues/397
+      keepAfterDeletion: true
+      persistentVolumeClaim:
+        metadata:
+          name: {{ include "redis-sentinel.fullname" . }}-data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: {{ .Values.redis.storage.size }}
+    {{- end }}
+    {{- if .Values.redis.metrics.enabled }}
+    exporter:
+      enabled: true
+      image: oliver006/redis_exporter:v1.3.5-alpine
+      args:
+        - --web.telemetry-path
+        - /metrics
+      env:
+        - name: REDIS_EXPORTER_LOG_FORMAT
+          value: txt
+    {{- end }}
