@@ -55,6 +55,7 @@ spec:
           resources:
             requests:
               storage: {{ .Values.redis.storage.size }}
+          storageClassName: {{ .Values.global.storageClass }}
     {{- end }}
     {{- if .Values.redis.metrics.enabled }}
     exporter:
