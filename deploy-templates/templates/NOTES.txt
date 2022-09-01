@@ -1,0 +1,1 @@
+1. Application redis-sentinel has been successfully deployed!!
