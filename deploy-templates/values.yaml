@@ -50,6 +50,7 @@ sentinel:
     - "parallel-syncs 1"
     - "min-replicas-to-write 1"
     - "min-replicas-max-lag 10"
+    - "maxmemory 500m"
   metrics:
     enabled: true
 
@@ -68,3 +69,5 @@ redis:
   metrics:
     enabled: true
 
+monitoring:
+  namespace: openshift-monitoring
