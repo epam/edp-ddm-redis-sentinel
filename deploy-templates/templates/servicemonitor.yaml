@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-sentinel-{{ .Release.Namespace }}
+  namespace: {{ .Values.monitoring.namespace }}
+  labels:
+    app.kubernetes.io/name: redis-sentinel
+    namespace: {{ .Release.Namespace }}
+    relatedNamespace: {{ .Release.Namespace }}
+spec:
+  endpoints:
+    - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      interval: 30s
+      path: /metrics
+      scheme: http
+      targetPort: 9121
+  jobLabel: app
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - redis-sentinel
