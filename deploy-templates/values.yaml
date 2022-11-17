@@ -16,24 +16,40 @@ serviceAccount:
   name: ""
 
 global:
-  redisSentinel:
+  registry:
     redis:
-      replicas: 3
+      replicas: 2
+      istio:
+        sidecar:
+          enabled: false
+          resources:
+            limits: {}
+            requests: {}
+      container:
+        resources: {}
     sentinel:
       replicas: 3
+      istio:
+        sidecar:
+          enabled: true
+          resources:
+            limits: {}
+            requests: {}
+      container:
+        resources: {}
+
 
 sentinel:
-  podAnnotations:
-    sidecar.istio.io/inject: "true"
+  podAnnotations: {}
   image:
     repository: redis
     tag: 6.2.6-alpine
-  resources:
-    requests:
-      cpu: 100m
-    limits:
-      memory: 100Mi
-  customConfig: []
+  customConfig:
+    - "down-after-milliseconds 60000"
+    - "failover-timeout 180000"
+    - "parallel-syncs 1"
+    - "min-replicas-to-write 1"
+    - "min-replicas-max-lag 10"
   metrics:
     enabled: true
 
@@ -45,13 +61,6 @@ redis:
   image:
     repository: redis
     tag: 6.2.6-alpine
-  resources:
-    requests:
-      cpu: 100m
-      memory: 100Mi
-    limits:
-      cpu: 400m
-      memory: 500Mi
   customConfig: []
   storage:
     create: true
