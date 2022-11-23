@@ -50,7 +50,6 @@ sentinel:
     - "parallel-syncs 1"
     - "min-replicas-to-write 1"
     - "min-replicas-max-lag 10"
-    - "maxmemory 500m"
   metrics:
     enabled: true
 
@@ -62,7 +61,8 @@ redis:
   image:
     repository: redis
     tag: 6.2.6-alpine
-  customConfig: []
+  customConfig:
+    - "maxmemory 500m"
   storage:
     create: true
     size: 2Gi
