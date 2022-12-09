@@ -1,0 +1,56 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: rsync-to-${DEST_PVC}
+objects:
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: rsync-to-${DEST_PVC}
+      namespace: ${NAMESPACE}
+    spec:
+      template:
+        metadata:
+          name: rsync-to-${DEST_PVC}
+        spec:
+          restartPolicy: Never
+          serviceAccountName: redis-sentinel
+          serviceAccount: redis-sentinel
+          securityContext:
+            runAsUser: 0
+          containers:
+            - name: rsync
+              env:
+                - name: RSYNC_UID
+                  value: '1000'
+                - name: RSYNC_GID
+                  value: '1000'
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: dest
+                  mountPath: /dest
+                - name: src
+                  readOnly: true
+                  mountPath: /src
+              image: ogivuk/rsync
+              args:
+                - '-av'
+                - /src/
+                - /dest/
+          volumes:
+            - name: dest
+              persistentVolumeClaim:
+                claimName: ${DEST_PVC}
+            - name: src
+              persistentVolumeClaim:
+                claimName: ${SRC_PVC}
+parameters:
+  - displayName: Namespace
+    name: NAMESPACE
+    required: true
+  - displayName: Source PVC name
+    name: SRC_PVC
+    required: true
+  - displayName: Destination PVC name
+    name: DEST_PVC
+    required: true
