@@ -48,9 +48,9 @@ spec:
     serviceAccountName: {{ include "redis-sentinel.serviceAccountName" . }}
     image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag | default .Chart.AppVersion }}"
     replicas: {{ .Values.global.registry.redis.replicas }}
-    {{- if .Values.redis.customConfig }}
+    {{- if .Values.global.registry.redis.container.customConfig }}
     customConfig:
-      {{- range .Values.redis.customConfig }}
+      {{- range .Values.global.registry.redis.container.customConfig }}
       - "{{ . }}"
       {{- end }}
     {{- end }}
