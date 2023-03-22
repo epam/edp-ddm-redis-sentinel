@@ -2,6 +2,8 @@ apiVersion: databases.spotahome.com/v1
 kind: RedisFailover
 metadata:
   name: {{ include "redis-sentinel.fullname" . }}
+  labels:
+    collect.logs: plain-text
 spec:
   auth:
     secretPath: {{ .Values.redis.auth.secretName }}
