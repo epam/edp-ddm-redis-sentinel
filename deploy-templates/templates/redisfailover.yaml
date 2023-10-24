@@ -15,7 +15,11 @@ spec:
       {{- end }}
       {{- if .Values.global.registry.sentinel.istio.sidecar.enabled }}
       sidecar.istio.io/inject: 'true'
+      {{- if .Values.global.istio.sidecar.requestsLimitsEnabled }}
       {{- include "sentinel.istioResources" . | nindent 6 }}
+      {{- else }}
+      inject.istio.io/templates: 'sidecar,emptyRequestsLimits'
+      {{- end }}
       {{- end }}
     {{- end }}
     serviceAccountName: {{ include "redis-sentinel.serviceAccountName" . }}
@@ -27,7 +31,7 @@ spec:
       - "{{ . }}"
       {{- end }}
     {{- end }}
-    {{- if or .Values.global.registry.sentinel.container.resources.requests .Values.global.registry.sentinel.container.resources.limits }}
+    {{- if .Values.global.container.requestsLimitsEnabled }}
     resources:
       {{- toYaml .Values.global.registry.sentinel.container.resources | nindent 6 }}
     {{- end }}
@@ -42,10 +46,6 @@ spec:
       {{- range $key, $value := .Values.redis.podAnnotations }}
       {{ $key }}: {{ $value | quote }}
       {{- end }}
-      {{- if .Values.global.registry.redis.istio.sidecar.enabled }}
-      sidecar.istio.io/inject: 'true'
-      {{- include "redis.istioResources" . | nindent 6 }}
-      {{- end }}
     {{- end }}
     serviceAccountName: {{ include "redis-sentinel.serviceAccountName" . }}
     image: "{{ .Values.dockerRegistry }}/{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag | default .Chart.AppVersion }}"
@@ -56,7 +56,7 @@ spec:
       - "{{ . }}"
       {{- end }}
     {{- end }}
-    {{- if or .Values.global.registry.redis.container.resources.requests .Values.global.registry.redis.container.resources.limits }}
+    {{- if .Values.global.container.requestsLimitsEnabled }}
     resources:
       {{- toYaml .Values.global.registry.redis.container.resources | nindent 6 }}
     {{- end }}

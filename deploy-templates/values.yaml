@@ -16,30 +16,35 @@ serviceAccount:
   name: ""
 
 global:
+  container:
+    requestsLimitsEnabled: true
+  istio:
+    sidecar:
+      requestsLimitsEnabled: true
+      resources:
+        requests: {}
+        limits: {}
   registry:
     redis:
-      replicas: 2
-      istio:
-        sidecar:
-          enabled: false
-          resources:
-            limits: {}
-            requests: {}
       container:
         customConfig:
           - "maxmemory 500m"
-        resources: {}
+        resources:
+          requests: {}
+          limits: {}
+      replicas: 2
     sentinel:
-      replicas: 3
+      container:
+        resources:
+          requests: {}
+          limits: {}
       istio:
         sidecar:
           enabled: true
           resources:
             limits: {}
             requests: {}
-      container:
-        resources: {}
-
+      replicas: 3
 
 sentinel:
   podAnnotations: {}
