@@ -44,12 +44,15 @@ spec:
     {{- if or .Values.redis.podAnnotations .Values.global.registry.redis.istio.sidecar.enabled }}
     podAnnotations:
       {{- range $key, $value := .Values.redis.podAnnotations }}
-      {{ $key }}: {{ $value | quote }}
+      {{ $key }}: {{ tpl $value $ | quote }}
       {{- end }}
     {{- end }}
     serviceAccountName: {{ include "redis-sentinel.serviceAccountName" . }}
     image: "{{ .Values.dockerRegistry }}/{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag | default .Chart.AppVersion }}"
     replicas: {{ .Values.global.registry.redis.replicas }}
+    command:
+      - "redis-server"
+      - "{{ .Values.redis.acl.mountPath }}/{{ .Values.redis.acl.configFile }}"
     {{- if .Values.global.registry.redis.container.customConfig }}
     customConfig:
       {{- range .Values.global.registry.redis.container.customConfig }}
@@ -86,4 +89,12 @@ spec:
         - name: REDIS_EXPORTER_LOG_FORMAT
           value: txt
     {{- end }}
-
+    extraVolumes:
+      - name: users-acl
+        secret:
+          secretName: {{ .Values.redis.acl.secretName }}
+          optional: false
+    extraVolumeMounts:
+      - name: users-acl
+        mountPath: {{ .Values.redis.acl.mountPath }}
+        readonly: true

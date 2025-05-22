@@ -65,6 +65,7 @@ redis:
     secretName: "redis-auth"
   podAnnotations:
     backup.velero.io/backup-volumes: redis-sentinel-data
+    secret.reloader.stakater.com/reload: "{{ .Values.redis.acl.secretName }}"
   image:
     repository: redis
     tag: 6.2.6-alpine
@@ -73,6 +74,66 @@ redis:
     size: 2Gi
   metrics:
     enabled: true
+  acl:
+    secretName: redis-users-acl
+    mountPath: /var/run/secrets/acl
+    configFile: users.conf
+    users:
+      - name: bpms-redis-user
+        username: bpms-user
+        secretName: redis-bpms-user-secret
+        keyPattern: "~bpm-form-submissions* ~bpm-message-payloads*"
+        permissions: "+@read +@write -@dangerous +info"
+      - name: bp-admin-portal-redis-user
+        username: bp-admin-portal-user
+        secretName: redis-bp-admin-portal-user-secret
+        keyPattern: "~bpm-form-submissions*"
+        permissions: "+@read +@write -@dangerous +info"
+      - name: bp-webservice-gateway-redis-user
+        username: bp-webservice-gateway-user
+        secretName: redis-bp-webservice-gateway-user-secret
+        keyPattern: "~bpm-form-submissions*"
+        permissions: "+@read +@write -@dangerous +info"
+      - name: excerpt-service-api-redis-user
+        username: excerpt-service-api-user
+        secretName: redis-excerpt-service-api-user-secret
+        keyPattern: "~bpm-form-submissions*"
+        permissions: "+@read -@dangerous +info"
+      - name: registry-rest-api-redis-user
+        username: registry-rest-api-user
+        secretName: redis-registry-rest-api-user-secret
+        keyPattern: "~bpm-form-submissions*"
+        permissions: "+@read -@dangerous +info"
+      - name: user-process-management-redis-user
+        username: user-process-management-user
+        secretName: redis-user-process-management-user-secret
+        keyPattern: "~bpm-form-submissions*"
+        permissions: "+@read +@write -@dangerous +info"
+      - name: user-task-management-redis-user
+        username: user-task-management-user
+        secretName: redis-user-task-management-user-secret
+        keyPattern: "~bpm-form-submissions*"
+        permissions: "+@read +@write -@dangerous +info"
+      - name: kong-redis-user
+        username: kong-user
+        secretName: redis-kong-user-secret
+        keyPattern: "~sessions*"
+        permissions: "+@read +@write -@dangerous +select"
+      - name: kong-admin-tools-redis-user
+        username: kong-admin-tools-user
+        secretName: redis-kong-admin-tools-user-secret
+        keyPattern: "~sessions*"
+        permissions: "+@read +@write -@dangerous +select"
+      - name: user-settings-service-api-redis-user
+        username: user-settings-service-api-user
+        secretName: redis-user-settings-service-api-user-secret
+        keyPattern: "~channel-verification-codes*"
+        permissions: "+@read +@write -@dangerous +info +config"
+      - name: form-schema-provider-redis-user
+        username: form-schema-provider-user
+        secretName: redis-form-schema-provider-user-secret
+        keyPattern: "~bpm-form-schemas*"
+        permissions: "+@read +@write -@dangerous +info"
 
 monitoring:
   namespace: openshift-monitoring
